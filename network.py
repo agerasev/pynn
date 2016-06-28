@@ -12,32 +12,36 @@ class Network(Node):
 			self.index = index
 
 		def __call__(self, chan, signal):
-			self.outer.signals.put(((self.index, chan), signal))
-
-	def ready(self):
-		for i, node in enumerate(self.nodes):
-			node.emit = self.Fetcher(self, i)
+			self.outer.queue.put(((self.index, chan), signal))
 
 	def run(self):
-		while not self.signals.empty():
-			(src, signal) = self.signals.get()
+		while not self.queue.empty():
+			(src, signal) = self.queue.get()
 			dst = self.links[src]
+			# print(dst)
 			if dst[0] < 0:
 				self.emit(dst[1], signal)
 			else:
 				self.nodes[dst[0]].push(dst[1], signal)
 
-	def __init__(self, **opt):
+	def __init__(self, nodes, paths, **opt):
 		Node.__init__(self)
-		self.nodes = opt.get('nodes', [])
-		self.links = opt.get('links', {})
-		self.signals = Queue()
-		self.ready()
+		self.nodes = nodes
+
+		self.paths = paths
+		self.links = {}
+		for src, dst in paths:
+			self.links[src] = dst
+			self.links[dst] = src
+
+		self.queue = Queue()
+		for i, node in enumerate(self.nodes):
+			node.emit = self.Fetcher(self, i)
 
 	def push(self, chan, signal):
 		if chan == 0:  # broadcast
 			for node in self.nodes:
 				node.push(0, signal)
 		else:
-			self.outer.signal.put(((-1, chan), signal))
+			self.queue.put(((-1, chan), signal))
 			self.run()

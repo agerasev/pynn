@@ -25,5 +25,5 @@ class Fork(Node):
 				self.emit(1, self.slot[0] + self.slot[1])
 				self.clear()
 		elif chan == 0:
-			if signal == 'clear.slot':
+			if signal == 'slot.clear':
 				self.clear()

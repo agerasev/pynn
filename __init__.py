@@ -2,4 +2,4 @@
 
 from .node import Node
 from .network import Network
-from .layer import *
+from .layers import *

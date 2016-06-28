@@ -43,3 +43,15 @@ class Tanh(Layer):
 	def backward(self, data):
 		out = self.memory.pop()
 		return data*(1 - out**2)
+
+
+class Softmax(Layer):
+	def __init__(self, **opt):
+		Layer.__init__(self, **opt)
+
+	def forward(self, data):
+		exp = np.exp(data)
+		return exp/np.sum(exp)
+
+	def backward(self, data):
+		raise NotImplementedError()
