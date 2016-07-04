@@ -22,7 +22,11 @@ class Network(Node):
 			if dst[0] < 0:
 				self.emit(dst[1], signal)
 			else:
-				self.nodes[dst[0]].push(dst[1], signal)
+				try:
+					self.nodes[dst[0]].push(dst[1], signal)
+				except Exception as e:
+					e.args = ('node %d: ' % dst[0]) + str(e.args[0]),
+					raise
 
 	def __init__(self, nodes, paths, **opt):
 		Node.__init__(self)
@@ -44,4 +48,4 @@ class Network(Node):
 				node.push(0, signal)
 		else:
 			self.queue.put(((-1, chan), signal))
-			self.run()
+		self.run()

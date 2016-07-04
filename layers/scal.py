@@ -18,13 +18,13 @@ class Uniform(Layer):
 
 class Bias(Layer):
 	def __init__(self, size, **opt):
-		if opt.get('state', None) is None:
-			opt['state'] = np.zeros(size)
+		if opt.get('weight', None) is None:
+			opt['weight'] = np.zeros(size)
 		self.size = size
 		Layer.__init__(self, **opt)
 
 	def forward(self, data):
-		return data + self.state
+		return data + self.weight
 
 	def backward(self, data):
 		self.grad += data

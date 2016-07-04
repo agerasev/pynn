@@ -7,11 +7,11 @@ from ..node import Node
 
 class Layer(Node):
 	def __init__(self, **opt):
-		self.state = opt.get('state', None)
+		self.weight = opt.get('weight', None)
 		self.memory = []
 		self.count = 0
-		if self.state is not None:
-			self.grad = np.zeros_like(self.state)
+		if self.weight is not None:
+			self.grad = np.zeros_like(self.weight)
 			self.rate = opt['rate']
 			self.clip = opt.get('clip', 5e0)
 			if opt.get('adagrad', False):
@@ -29,10 +29,10 @@ class Layer(Node):
 			np.clip(self.grad, -self.clip, self.clip, out=self.grad)
 			if hasattr(self, 'adagrad'):
 				self.adagrad += self.grad**2
-				self.state -= self.rate*self.grad/np.sqrt(self.adagrad)
+				self.weight -= self.rate*self.grad/np.sqrt(self.adagrad)
 			else:
-				self.state -= self.rate*self.grad
-			self.grad = np.zeros_like(self.state)
+				self.weight -= self.rate*self.grad
+			self.grad = np.zeros_like(self.weight)
 
 	def push(self, chan, signal):
 		if chan == 0:  # broadcast
@@ -42,6 +42,7 @@ class Layer(Node):
 			self.count += 1
 			self.emit(2, self.forward(signal))
 		elif chan == 2:  # output
-			if self.count > 0:
-				self.count -= 1
-				self.emit(1, self.backward(signal))
+			if self.count <= 0:
+				raise Exception('Backward more than forward')
+			self.count -= 1
+			self.emit(1, self.backward(signal))
